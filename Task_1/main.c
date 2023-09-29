@@ -10,6 +10,14 @@
 #include <math.h>
 #include <stdlib.h>
 
+enum status_codes
+{
+    fsc_ok,
+    fsc_overflow,
+    fsc_invalid_parameter,
+    fsc_unknown,
+};
+
 //Для возведения в степень также можно было пользоваться фонкцией pow
 long power(int n, int p)
 {
@@ -21,7 +29,7 @@ long power(int n, int p)
 }
 
 //Для перевода строки в число можно было такде пользоваться функцией atoi
-bool str_to_num(const char* str, int* res)
+enum status_codes str_to_num(const char* str, int* res)
 {
     char const* p_flags = str;
     if (*p_flags == '-')
@@ -33,18 +41,20 @@ bool str_to_num(const char* str, int* res)
         if (*p_flags >= '0' && *p_flags <= '9')
             *res = *res * 10 + *p_flags - '0';
         else
-            return false;
+            return fsc_invalid_parameter;
     }
     
     if (str[0] == '-')
         *res *= (-1);
     
-    return true;
+    return fsc_ok;
 }
 
 bool is_num_prime(int n)
 {
-    n = abs(n);
+    if (n < 0)
+        return false;
+
     for (int i = 2; i < (int)sqrt(n) + 1; ++i)
         if (n % i == 0)
             return false;
@@ -53,7 +63,10 @@ bool is_num_prime(int n)
 
 int len_of_value(int value)
 {
-    abs(value);
+    if (value == 0)
+        return 1;
+    
+    value = abs(value);
     int col = 0;
     while (value > 0)
     {
@@ -63,51 +76,57 @@ int len_of_value(int value)
     return col;
 }
 
-char* int_to_str(int value)
+enum status_codes int_to_str(int value, char* buffer, int buffer_size)
 {
+    int len = len_of_value(value);
+    if (len >= buffer_size - 1)
+        return fsc_overflow;
+    
     value = abs(value);
     int i = 0;
-    char* res = malloc(sizeof(char) * (len_of_value(value) + 1));
     long del = power(10, len_of_value(value) - 1);
-    while (value > 0)
+    while (len > i)
     {
-        res[i] = (int)(value / del) + '0';
+        buffer[i] = value / del + '0';
         value %= del;
         del = (int)(del / 10);
         ++i;
     }
-    
-    res[i] = 0;
-    return res;
+    buffer[i] = 0;
+    return fsc_ok;
 }
 
-bool sum (int n, int* res)
-{
-    for (int i = 1; i <= n; ++i)
-    {
-        *res += i;
-        if (*res < 0)
-            return false;
-    }
-    return true;
-}
-
-bool fact(int n, int* res)
+enum status_codes sum (int n, int* res)
 {
     if (n < 0)
-        return false;
+        return fsc_invalid_parameter;
+    
+    *res = (int)((1 + n) / 2) * n;
+    
+    if (*res < 0)
+        return fsc_overflow;
+    
+    return fsc_ok;
+}
+
+enum status_codes fact(int n, int* res)
+{
+    if (n < 0)
+        return fsc_invalid_parameter;
     *res = 1;
     for (int i = 1; i <= n; ++i)
     {
         *res *= i;
         if (*res < 0)
-            return false;
+            return fsc_overflow;
     }
-    return true;
+    return fsc_ok;
 }
 
 int main(int argc, const char * argv[])
 {
+    enum status_codes function_result = fsc_unknown;
+    
     bool flag_ready = false;
     bool value_ready = false;
     char const* flags_list = "hpseaf";
@@ -122,10 +141,7 @@ int main(int argc, const char * argv[])
                 if (flag == *p_flags)
                 {
                     if (flag_ready)
-                    {
-                        printf("Найдено два флага\n");
-                        return 1;
-                    }
+                        function_result = fsc_invalid_parameter;//найдено два флага
                     
                     flag_ready = true;
                     break;
@@ -133,119 +149,140 @@ int main(int argc, const char * argv[])
         }
         
         int read_value;
-        if (str_to_num(argv[i], &read_value))
+        if (str_to_num(argv[i], &read_value) == fsc_ok)
         {
             value = read_value;
             if (value_ready)
-            {
-                printf("Найдено два числа\n");
-                return 1;
-            }
+                function_result = fsc_invalid_parameter;//найдено два числа
+            
             value_ready = true;
         }
         
     }
-    if (!(flag_ready))
-    {
-        printf("Флаг не найден\n");
-        return 1;
-    }
+    function_result = (flag_ready && value_ready) ? fsc_ok : fsc_invalid_parameter;
     
-    if (!(value_ready))
+    //printf("%c %d\n", flag, value);
+    if (function_result == fsc_ok)
     {
-        printf("Число не найдено\n");
-        return 1;
-    }
-    
-    //printf("%d %c\n", value, flag);
-    
-    switch(flag)
-    {
-        case 'h':
+        switch(flag)
         {
-            bool f = false;
-            for (int i = 1; i <= 100; ++i)
-                if (i % value == 0)
+            case 'h':
+            {
+                value = abs(value);
+                if (value == 0)
+                    function_result = fsc_invalid_parameter;
+                else
                 {
-                    f = true;
-                    printf("%d ",i);
+                    for (int i = value; i <= 100; i+=value)
+                        printf("%d ",i);
+                    
+                    if (value > 100 || value < 1)
+                        printf("No multiples found");
+                    
+                    printf("\n");
+                    function_result = fsc_ok;
                 }
-            
-            if (!f)
-                printf("Кратных числ нет");
-            
-            printf("\n");
-            break;
-        }
-        case 'p':
-        {
-            if (is_num_prime(value))
-                printf("Число %d простое\n", value);
-            else
-                printf("Число %d составное\n", value);
-            break;
-        }
-        case 's':
-        {
-            char* p = int_to_str(value);
-            char* p_tmp = int_to_str(value);
-            for (; *p_tmp != 0; ++p_tmp)
-                printf("%c ",*p_tmp);
-            
-            printf("\n");
-            free(p);
-            break;
-        }
-        case 'e':
-        {
-            if (value > 10)
-                printf("Ошибка. Введенное число больше 10. \n");
-                if (value < 0)
-                    printf("Ошибка. ВВеденное число отрицательное.\n");
+                break;
+            }
+            case 'p':
+            {
+                if (is_num_prime(value))
+                    printf("value is simple\n");
+                else
+                    printf("value is composit\n");
+                
+                function_result = fsc_ok;
+                break;
+            }
+            case 's':
+            {
+                char buffer[256];
+                if (int_to_str(value, buffer, sizeof(buffer)) == fsc_ok)
+                {
+                    for (char* p_flags = buffer; *p_flags != 0; ++p_flags)
+                        printf("%c ",*p_flags);
+                }
+                
+                printf("\n");
+                break;
+            }
+            case 'e':
+            {
+                if (value > 10 || value < 0)
+                    function_result = fsc_invalid_parameter;
+
                 else
                 {
                     for (int i = 1; i <= value; ++i)//Подписи столбцов
                         printf("%11d ", i);
                     printf("\n\n");
-                    
+                
                     for (int i = 1; i <= 10; ++i)//Числа, возводимые в степень
                     {
+                        long pow_value = 1;
                         for (int j = 1; j <= value; ++j)//Степень
-                            printf("%11ld ", power(i, j));
+                        {
+                            pow_value *= i;
+                            printf("%11ld ",pow_value);
+                        }
                         printf("\n");
                     }
+                    function_result = fsc_ok;
                 }
-            break;
-        }
-        case 'a':
-        {
-            if (value < 0)
-                printf("Ошибка. ВВеденное число отрицательное.\n");
-            else
-            {
-                int res = 0;
-                if (sum(value, &res))
-                    printf("%d\n", res);
-                else
-                    printf("Переполенение\n");
+                break;
             }
-            break;
-        }
-        case 'f':
-        {
-            if (value < 0)
-                printf("Ошибка. ВВеденное число отрицательное.\n");
-            else
+            case 'a':
             {
-                int res = 1;
-                if (fact(value, &res))
-                    printf("Факториал %d равен: %d\n",value, res);
+                if (value < 0)
+                    function_result = fsc_invalid_parameter;
                 else
-                    printf("Переполение\n");
+                {
+                    int res = 0;
+                    if (sum(value, &res) == fsc_ok)
+                    {
+                        printf("%d\n", res);
+                        function_result = fsc_ok;
+                    }
+                    else
+                        function_result = fsc_overflow;
+                }
+                break;
             }
-            break;
+            case 'f':
+            {
+                if (value < 0)
+                    function_result = fsc_invalid_parameter;
+                else
+                {
+                    int res = 1;
+                    if (fact(value, &res) == fsc_ok)
+                    {
+                        printf("Факториал %d равен: %d\n",value, res);
+                        function_result = fsc_ok;
+                    }
+                    else
+                        function_result = fsc_overflow;
+                }
+                break;
+            }
         }
     }
     
-    return 0;
+    switch (function_result)
+    {
+        case fsc_ok:
+            break;
+        case fsc_overflow:
+            printf("Overflow detected\n");
+            break;
+        case fsc_invalid_parameter:
+            printf("Invalid parameter detected\n");
+            break;
+        default:
+            printf("function_result is unknown\n");
+    }
+    
+        
+    return function_result == fsc_ok ? 0 : 1;
 }
+
