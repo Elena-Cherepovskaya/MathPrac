@@ -29,9 +29,11 @@ double log_a_b(double a, double b)
 
 enum status_codes translation_10_to_x (char n, char* res, int x)
 {
-    int p = 0;
     int len_of_n = floor(log_a_b(x, n)) + 1;
     res[len_of_n] = 0;
+    
+    if (len_of_n > MAX_SIZE_OF_BUFFER )
+        return fsc_overflow;
     
     while (n > 0)
     {
@@ -44,18 +46,8 @@ enum status_codes translation_10_to_x (char n, char* res, int x)
         
         n /= x;
         
-        if ((p + 1) < (MAX_SIZE_OF_BUFFER - 1))
-            ++p;
-        else
-            return fsc_overflow;
     }
-    res[p] = 0;
-    for (int i = 0, j = strlen(res) - 1; i < j; i++, j--)
-    {
-        char c = res[i];
-        res[i] = res[j];
-        res[j] = c;
-    }
+    
     return fsc_ok;
 }
 
