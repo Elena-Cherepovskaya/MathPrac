@@ -169,6 +169,9 @@ int main(int argc, const char * argv[])
         case fsc_invalid_parameter:
             printf("Invalid parameter detected\n");
             break;
+        case fsc_memory_error_detected:
+            printf("Memory error detected\n");
+            break;
         default:
             printf("function_result is unknown\n");
     }
