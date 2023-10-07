@@ -54,10 +54,12 @@ int main(int argc, const char * argv[])
     
     int a = -1000;
     int b = 1000;
-    int size_of_array = 10 + rand() % (10000 - 10 + 1);
-    int* A = malloc(sizeof(int) * size_of_array);
-    int* B = malloc(sizeof(int) * size_of_array);
-    int* C = malloc(sizeof(int) * size_of_array);
+    int size_of_array_A = 10 + rand() % (10000 - 10 + 1);
+    int size_of_array_B = 10 + rand() % (10000 - 10 + 1);
+    
+    int* A = malloc(sizeof(int) * size_of_array_A);
+    int* B = malloc(sizeof(int) * size_of_array_B);
+    int* C = malloc(sizeof(int) * size_of_array_A);
     
     if (A == NULL || B == NULL || C == NULL)
         function_result = fsc_memory_error_detected;
@@ -66,23 +68,21 @@ int main(int argc, const char * argv[])
     
     if (function_result == fsc_ok)
     {
-        for (int i = 0; i < size_of_array; ++i)
-        {
+        for (int i = 0; i < size_of_array_A; ++i)
             A[i] = a + rand() % (b - a + 1);
+        for(int i = 0; i < size_of_array_B; ++i)
             B[i] = a + rand() % (b - a + 1);
-        }
         
-        printf("2\n");
         printf("A: ");
-        printf_of_array(A, size_of_array);
+        printf_of_array(A, size_of_array_A);
         printf("B: ");
-        printf_of_array(B, size_of_array);
+        printf_of_array(B, size_of_array_B);
 
-        for (int i = 0; i < size_of_array; ++i)
-            C[i] = A[i] + nearest_values_from_array(A[i], B, size_of_array);
+        for (int i = 0; i < size_of_array_A; ++i)
+            C[i] = A[i] + nearest_values_from_array(A[i], B, size_of_array_B);
         
         printf("C: ");
-        printf_of_array(C, size_of_array);
+        printf_of_array(C, size_of_array_A);
         
     }
     
