@@ -9,6 +9,8 @@
 #include <stdbool.h>
 #include <string.h>
 #include <ctype.h>
+#include <math.h>
+#include <stdlib.h>
 
 #define MAX_SIZE_OF_BUFFER 128
 
@@ -20,17 +22,28 @@ enum status_codes
     fsc_unknown,
 };
 
+double log_a_b(double a, double b)
+{
+    return (log(b) / log(a));
+}
+
 enum status_codes translation_10_to_x (char n, char* res, int x)
 {
     int p = 0;
+    int len_of_n = floor(log_a_b(x, n)) + 1;
+    res[len_of_n] = 0;
+    
     while (n > 0)
     {
+        len_of_n--;
+        
         if (n % x >= 10)
-            res[p] = (n % x) - 10 + 'A';
+            res[len_of_n] = (n % x) - 10 + 'A';
         else
-            res[p] = (n % x) + '0';
+            res[len_of_n] = (n % x) + '0';
         
         n /= x;
+        
         if ((p + 1) < (MAX_SIZE_OF_BUFFER - 1))
             ++p;
         else
