@@ -30,6 +30,13 @@ double log_a_b(double a, double b)
 
 enum status_codes translation_10_to_x (int n, char* res, int x)
 {
+    if (n == 0)
+    {
+        res[0] = '0';
+        res[1] = 0;
+        return fsc_ok;
+    }
+    
     int len_of_n = floor(log_a_b(x, n)) + 1;
     res[len_of_n] = 0;
     
@@ -57,7 +64,6 @@ enum status_codes translation_x_to_10 (char* n, int* res, int x)
     *res = 0;
     int tmp_n = 0;
     int pow_x = 1;
-    *res = 0;
     for (int i = strlen(n) - 1; i >= 0; --i)
     {
         if (isalpha(n[i]))
@@ -85,20 +91,27 @@ int main(int argc, const char * argv[])
     scanf("%d", &base);
     getchar();//Чтобы ''
     
-    char* value = malloc(sizeof(char) * MAX_SIZE_OF_BUFFER);
-    function_result = (value == NULL) ? fsc_memory_error_detected : fsc_ok;
-        
-    char c;
-    int i = 0;
-    int max_value = 0;
-    int value_10 = 0;
-    bool sign = false;
-    bool max_value_sign = false;
-    printf("Введите числа:\n");
-    char* value_ptr;
+    char* value;
+    if (base < 2)
+        function_result = fsc_invalid_parameter;
+    else
+    {
+        value = malloc(sizeof(char) * MAX_SIZE_OF_BUFFER);
+        function_result = (value == NULL) ? fsc_memory_error_detected : fsc_ok;
+    }
     
     if (function_result == fsc_ok)
     {
+        
+        char c;
+        int i = 0;
+        int max_value = 0;
+        int value_10 = 0;
+        bool sign = false;
+        bool max_value_sign = false;
+        bool value_is_empty = true;
+        printf("Введите числа:\n");
+        char* value_ptr;
         while (function_result != fsc_overflow)
         {
             sign = false;
@@ -117,6 +130,12 @@ int main(int argc, const char * argv[])
             
             value[i] = 0;
             
+            if (strcmp(value, "-0") == 0)
+            {
+                function_result = fsc_invalid_parameter;
+                break;
+            }
+            
             if (strcmp(value, "Stop") == 0)
                 break;
             
@@ -127,8 +146,10 @@ int main(int argc, const char * argv[])
             }
             else
                 value_ptr = value;
+            
             if (translation_x_to_10(value_ptr, &value_10, base) == fsc_ok)
             {
+                value_is_empty = false;
                 if (value_10 > max_value)
                 {
                     max_value = value_10;
@@ -144,18 +165,20 @@ int main(int argc, const char * argv[])
             function_result = fsc_ok;
         }
         
-        printf("Выходные данные: \n");
-        printf("Max value: %s%d\n", (max_value_sign ? "-" : ""), max_value);
-        
-        int list_of_bases[4] = {9, 18, 27, 36};
-        for (int i =0; i < 4; ++i)
+        if (function_result == fsc_ok && !value_is_empty)
         {
-            if ((translation_10_to_x(max_value, value, list_of_bases[i]) == fsc_ok) && (function_result == fsc_ok))
-                printf("base %d: %c%s\n",list_of_bases[i], (max_value_sign ? '-' : ' '), value);
-            else
-                function_result = fsc_overflow;
+            printf("Выходные данные: \n");
+            printf("Max value: %s%d\n", (max_value_sign ? "-" : ""), max_value);
+            
+            int list_of_bases[4] = {9, 18, 27, 36};
+            for (int i =0; i < 4; ++i)
+            {
+                if ((translation_10_to_x(max_value, value, list_of_bases[i]) == fsc_ok) && (function_result == fsc_ok))
+                    printf("base %d: %c%s\n",list_of_bases[i], (max_value_sign ? '-' : ' '), value);
+                else
+                    function_result = fsc_overflow;
+            }
         }
-        
         free(value);
     }
     
