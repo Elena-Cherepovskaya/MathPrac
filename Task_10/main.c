@@ -23,6 +23,17 @@ enum status_codes
     fsc_memory_error_detected,
 };
 
+int char_to_num(char c)
+{
+    if (isalpha(c))
+    {
+        if (isupper(c))
+            return (int)(c - 'A' + 10);
+        return (int)(c - 'a' + 10);
+    }
+    return (int)(c - '0');
+}
+
 double log_a_b(double a, double b)
 {
     return (log(b) / log(a));
@@ -66,6 +77,9 @@ enum status_codes translation_x_to_10 (char* n, int* res, int x)
     int pow_x = 1;
     for (int i = strlen(n) - 1; i >= 0; --i)
     {
+        if (char_to_num(n[i]) >= x)
+            return fsc_invalid_parameter;
+        
         if (isalpha(n[i]))
         {
             if (isupper(n[i]))
@@ -119,6 +133,13 @@ int main(int argc, const char * argv[])
             
             while((c = getchar()) != '\n')
             {
+                /*if (char_to_num(c) >= base)
+                {
+                    printf("*\n");
+                    function_result = fsc_invalid_parameter;
+                    break;
+                }*/
+                
                 if (i + 1 < MAX_SIZE_OF_BUFFER)
                 {
                     value[i] = c;
@@ -129,6 +150,9 @@ int main(int argc, const char * argv[])
             }
             
             value[i] = 0;
+            
+            //if (function_result != fsc_ok)
+                //break;
             
             if (strcmp(value, "-0") == 0)
             {
@@ -147,7 +171,8 @@ int main(int argc, const char * argv[])
             else
                 value_ptr = value;
             
-            if (translation_x_to_10(value_ptr, &value_10, base) == fsc_ok)
+            function_result = translation_x_to_10(value_ptr, &value_10, base);
+            if (function_result == fsc_ok)
             {
                 value_is_empty = false;
                 if (value_10 > max_value)
@@ -157,7 +182,7 @@ int main(int argc, const char * argv[])
                 }
             }
             else
-                function_result = fsc_overflow;
+                break;
             
             if (sign)
                 value_ptr = value;
