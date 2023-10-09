@@ -133,13 +133,6 @@ int main(int argc, const char * argv[])
             
             while((c = getchar()) != '\n')
             {
-                /*if (char_to_num(c) >= base)
-                {
-                    printf("*\n");
-                    function_result = fsc_invalid_parameter;
-                    break;
-                }*/
-                
                 if (i + 1 < MAX_SIZE_OF_BUFFER)
                 {
                     value[i] = c;
@@ -150,9 +143,6 @@ int main(int argc, const char * argv[])
             }
             
             value[i] = 0;
-            
-            //if (function_result != fsc_ok)
-                //break;
             
             if (strcmp(value, "-0") == 0)
             {
