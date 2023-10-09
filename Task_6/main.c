@@ -22,7 +22,7 @@ enum status_codes
 
 double f_0(double x)
 {
-    return log(1+x)/x;
+    return log(1 + x)/x;
 }
 
 double f_1(double x)
@@ -51,7 +51,7 @@ int main(int argc, const char * argv[])
 
         for(int nm = 0; nm < 4; ++nm)
         {
-            double dx = 0.01f;
+            double dx = 0.01;
             double prev_y = 0.0;
             while(true)
             {
