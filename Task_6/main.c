@@ -48,7 +48,8 @@ int main(int argc, const char * argv[])
     {
         char* end_str;
         double eps = strtod(argv[1], &end_str);
-
+        
+        double (*functions[4]) (double) = {f_0, f_1, f_2, f_3};
         for(int nm = 0; nm < 4; ++nm)
         {
             double dx = 0.01;
@@ -60,26 +61,9 @@ int main(int argc, const char * argv[])
                 {
                     double x1 = x - dx / 2.0;
                     double x2 = x + dx / 2.0;
-                    double y1, y2;
-                    switch (nm)
-                    {
-                        case 0:
-                            y1 = f_0(x1);
-                            y2 = f_0(x2);
-                            break;
-                        case 1:
-                            y1 = f_1(x1);
-                            y2 = f_1(x2);
-                            break;
-                        case 2:
-                            y1 = f_2(x1);
-                            y2 = f_2(x2);
-                            break;
-                        case 3:
-                            y1 = f_3(x1);
-                            y2 = f_3(x2);
-                            break;
-                    }
+
+                    double y1 = functions[nm](x1);
+                    double y2 = functions[nm](x2);
                     
                     double s = y1 + (y2 - y1) / 2.0;
                     y += s * dx;
