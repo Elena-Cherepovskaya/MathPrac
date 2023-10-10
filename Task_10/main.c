@@ -41,6 +41,12 @@ double log_a_b(double a, double b)
 
 enum status_codes translation_10_to_x (int n, char* res, int x)
 {
+    if (x == 0)
+        return fsc_invalid_parameter;
+    
+    if (x < 2 || x > 36)
+        return fsc_invalid_parameter;
+    
     if (n == 0)
     {
         res[0] = '0';
@@ -57,11 +63,11 @@ enum status_codes translation_10_to_x (int n, char* res, int x)
     while (n > 0)
     {
         len_of_n--;
-        
-        if (n % x >= 10)
-            res[len_of_n] = (n % x) - 10 + 'A';
+        int rm = n % x;
+        if (rm >= 10)
+            res[len_of_n] = rm - 10 + 'A';
         else
-            res[len_of_n] = (n % x) + '0';
+            res[len_of_n] = rm + '0';
         
         n /= x;
         
@@ -77,18 +83,10 @@ enum status_codes translation_x_to_10 (char* n, int* res, int x)
     int pow_x = 1;
     for (int i = strlen(n) - 1; i >= 0; --i)
     {
-        if (char_to_num(n[i]) >= x)
-            return fsc_invalid_parameter;
+        tmp_n = char_to_num(n[i]);
         
-        if (isalpha(n[i]))
-        {
-            if (isupper(n[i]))
-                tmp_n = n[i] - 'A' + 10;
-            else
-                tmp_n = n[i] - 'a' + 10;
-        }
-        else
-            tmp_n = n[i] - '0';
+        if (tmp_n >= x)
+            return fsc_invalid_parameter;
                 
         *res = *res + tmp_n * pow_x;
         pow_x *= x;
@@ -110,7 +108,7 @@ int main(int argc, const char * argv[])
         function_result = fsc_invalid_parameter;
     else
     {
-        value = malloc(sizeof(char) * MAX_SIZE_OF_BUFFER);
+        value = (char*)malloc(sizeof(char) * MAX_SIZE_OF_BUFFER);
         function_result = (value == NULL) ? fsc_memory_error_detected : fsc_ok;
     }
     
