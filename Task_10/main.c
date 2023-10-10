@@ -41,10 +41,8 @@ double log_a_b(double a, double b)
 
 enum status_codes translation_10_to_x (int n, char* res, int x)
 {
-    if (x == 0)
-        return fsc_invalid_parameter;
-    
-    if (x < 2 || x > 36)
+
+    if (x == 0 || x < 2 || x > 36)
         return fsc_invalid_parameter;
     
     if (n == 0)
